@@ -19,7 +19,7 @@ contourGraph(cubeFile, xyzFile, atomsDefiningPlane, plotlySlider=True, gifName=N
 
 **dStep**: step size to use when translating plane of visualization. Large step size results in fewer planes (lower resolution).
 
-**stepSmaller: step size to use for grid generated along visualization plane in order to retrieve voxel values from .cube file. A value of n results in a step size n times smaller than the step size of the .cube file.
+**stepSmaller**: step size to use for grid generated along visualization plane in order to retrieve voxel values from .cube file. A value of n results in a step size n times smaller than the step size of the .cube file.
 
 **verbose**: print information as the visualization is generated.
 
