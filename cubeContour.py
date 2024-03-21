@@ -9,7 +9,7 @@ from plotly.subplots import make_subplots
 from numpy.linalg import norm
 from itertools import combinations
 from math import ceil
-import os
+import os, sys
 
 
 def listCast(l, to = 'float'):
@@ -132,11 +132,13 @@ def pointsPlane(point1, point2, point3):
     return np.array([orthov[0], orthov[1], orthov[2], d])
 
 def atomsToPlane(mol, atom1, atom2, atom3):
-    '''Given molecule and 3 non-collinear atoms, returns plane containing atoms.'''
+    '''
+    Given molecule and 3 non-collinear atoms, returns plane containing atoms.
+    '''
     a1, a2, a3 = np.array(mol[atom1][2:]), np.array(mol[atom2][2:]), np.array(mol[atom3][2:])
     return pointsPlane(a1, a2, a3)
 
-def intersectionTwoLines(line1, line2):
+def intersectionTwoLines(line1, line2, verbose = True):
     '''
     Returns parameters t of two lines
     to get to point of intersection.
@@ -174,16 +176,19 @@ def intersectionTwoLines(line1, line2):
             matches.append(zMatch)
 
         if not all(matches): # will be true if matches is empty
-            print(f'\nLines\n{line1}\nand\n{line2} are parallel.\n')
+            if verbose:
+                print(f'\nLines\n{line1}\nand\n{line2} are parallel.\n')
             return -1
 
         for ti in ts:
             for tj in ts:
                 if not close(ti, tj):
-                    print(f'\nLines\n{line1}\nand\n{line2} are parallel.\n')
+                    if verbose:
+                        print(f'\nLines\n{line1}\nand\n{line2} are parallel.\n')
                     return -1
 
-        print(f'\nLines\n{line1}\nand\n{line2} are coincident.\n')
+        if verbose:
+            print(f'\nLines\n{line1}\nand\n{line2} are coincident.\n')
         return -2
 
 
@@ -208,13 +213,15 @@ def intersectionTwoLines(line1, line2):
             t2 = (vx1*t1 + x01 - x02)/vx2
 
             if not close(vz1*t1 + z01, vz2*t2 + z02):
-                print(f'\nLines\n{line1}\nand\n{line2} are skew.\n')
+                if verbose:
+                    print(f'\nLines\n{line1}\nand\n{line2} are skew.\n')
                 return -1
 
         else:
 
             if not close(y01-y02, (x01-x02)*(vy2/vx2)):
-                print(f'\nLines\n{line1}\nand\n{line2} are skew.\n')
+                if verbose:
+                    print(f'\nLines\n{line1}\nand\n{line2} are skew.\n')
                 return -1
 
             if not close(vz1, vz2*vx1/vx2):
@@ -222,11 +229,13 @@ def intersectionTwoLines(line1, line2):
                 t2 = (vx1*t1 + x01 - x02)/vx2
 
                 if not close(vy1*t1 + y01, vy2*t2 + y02):
-                    print(f'\nLines\n{line1}\nand\n{line2} are skew.\n')
+                    if verbose:
+                        print(f'\nLines\n{line1}\nand\n{line2} are skew.\n')
                     return -1
 
             else:
-                print(f'\nLines\n{line1}\nand\n{line2} are parallel. SOMETHING WENT WRONG.\n')
+                if verbose:
+                    print(f'\nLines\n{line1}\nand\n{line2} are parallel. SOMETHING WENT WRONG.\n')
                 return -1
 
     else:
@@ -245,11 +254,13 @@ def intersectionTwoLines(line1, line2):
             t2 = (vz1*t1 + z01 - z02)/vz2
 
             if not close(vx1*t1 + x01, vx2*t2 + x02):
-                print(f'\nLines\n{line1}\nand\n{line2} are skew.\n')
+                if verbose:
+                    print(f'\nLines\n{line1}\nand\n{line2} are skew.\n')
                 return -1
 
         else:
-            print(f'\nLines\n{line1}\nand\n{line2} are parallel. SOMETHING WENT WRONG.\n')
+            if verbose:
+                print(f'\nLines\n{line1}\nand\n{line2} are parallel. SOMETHING WENT WRONG.\n')
             return -1
 
     if swap:
@@ -257,11 +268,11 @@ def intersectionTwoLines(line1, line2):
 
     return t1,t2
 
-def ptTwoLines(line1, line2):
+def ptTwoLines(line1, line2, verbose = True):
     '''
     Return point of intersection of two lines.
     '''
-    result = intersectionTwoLines(line1, line2)
+    result = intersectionTwoLines(line1, line2, verbose = verbose)
     if result in [-1, -2]:
         return result
     else:
@@ -590,7 +601,7 @@ def planeGridGen(cubeFile, fileContainingMol, atomsDefiningPlane, Doffset = 0, v
         if type(planeFaceLine) != int:
 
             faceLeftLine = faceLeftLines[face]
-            faceLeftAndPlanePt = ptTwoLines(planeFaceLine, faceLeftLine)
+            faceLeftAndPlanePt = ptTwoLines(planeFaceLine, faceLeftLine, verbose)
 
             if verbose:
                 print(f"\n{face} face 'left' edge selected:\n{faceLeftLine}")
@@ -637,7 +648,7 @@ def planeGridGen(cubeFile, fileContainingMol, atomsDefiningPlane, Doffset = 0, v
             if exceed_limit1:
 
                 faceBackLine = faceBackLines[face]
-                faceBackAndPlanePt = ptTwoLines(planeFaceLine, faceBackLine)
+                faceBackAndPlanePt = ptTwoLines(planeFaceLine, faceBackLine, verbose)
 
                 if verbose:
                     print(f"\n{face} face 'back' edge selected:\n{faceBackLine}")
@@ -679,7 +690,7 @@ def planeGridGen(cubeFile, fileContainingMol, atomsDefiningPlane, Doffset = 0, v
             elif below_limit1:
 
                 faceFrontLine = faceFrontLines[face]
-                faceFrontAndPlanePt = ptTwoLines(planeFaceLine, faceFrontLine)
+                faceFrontAndPlanePt = ptTwoLines(planeFaceLine, faceFrontLine, verbose)
 
                 if verbose:
                     print(f"\n{face} face 'front' edge selected:\n{faceFrontLine}")
@@ -760,7 +771,8 @@ def planeGridGen(cubeFile, fileContainingMol, atomsDefiningPlane, Doffset = 0, v
     # use Gram-Schmidt to make the two vectors orthogonal (and normal)
     v1, v2 = gramSchmidt([v1, v2])
 
-    print("Complete.")
+    if verbose:
+        print("Complete.")
 
     # now we have two orthogonal vectors and a point
     # to describe the plane as a grid
@@ -833,7 +845,6 @@ def flattenedCube(cubeFile):
     '''
     Return 1D array of all voxel values in cube file.
     '''
-
     with open(cubeFile, 'r') as f:
         lines = f.readlines()
 
@@ -927,7 +938,7 @@ def mriPlane(cubeFile, cubeValues, v1, v2, point, stepSize, NstepsDir1, NstepsDi
 
     return gridx, gridy, np.array(gridv), pts
 
-def intersectionLineCombination(lines, xmin, xmax, ymin, ymax, zmin, zmax):
+def intersectionLineCombination(lines, xmin, xmax, ymin, ymax, zmin, zmax, verbose = True):
     '''
     Return all points of intersection between lines within prism limits.
     '''
@@ -935,7 +946,7 @@ def intersectionLineCombination(lines, xmin, xmax, ymin, ymax, zmin, zmax):
 
     pts = []
     for comb in combs:
-          intersection = ptTwoLines(*comb)
+          intersection = ptTwoLines(*comb, verbose)
           if type(intersection) != int:
               pts.append(intersection)
 
@@ -946,13 +957,13 @@ def intersectionLineCombination(lines, xmin, xmax, ymin, ymax, zmin, zmax):
 
     return ptsInCube
 
-def cartesianToPlaneBasis(pt, v1, v2, originPt, step):
+def cartesianToPlaneBasis(pt, v1, v2, originPt, step, verbose = True):
     '''
     Express cartesian coords in scalar mulitpliers of plane basis vectors.
     '''
     line1 = (v1, originPt)
     line2 = (v2, pt)
-    inter = ptTwoLines(line1, line2)
+    inter = ptTwoLines(line1, line2, verbose)
     inter1 = np.add(inter, -originPt)
     inter2 = np.add(pt, -inter)
     length1 = norm(inter1)/step
@@ -964,17 +975,18 @@ def cartesianToPlaneBasis(pt, v1, v2, originPt, step):
 
     return length1, length2
 
-def findPlaneLimits(v1, v2, originPt, step, lines, xmin, xmax, ymin, ymax, zmin, zmax):
+def findPlaneLimits(v1, v2, originPt, step, lines, xmin, xmax, ymin, ymax, zmin, zmax, verbose=True):
     '''
     Find min and max points of grid in both basis vector directions.
     '''
-    vertices = intersectionLineCombination(lines, xmin, xmax, ymin, ymax, zmin, zmax)
-    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    print(vertices)
-    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    vertices = intersectionLineCombination(lines, xmin, xmax, ymin, ymax, zmin, zmax, verbose)
+    if verbose:
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(vertices)
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     convertedVertices = []
     for vertex in vertices:
-        convertedVertices.append(cartesianToPlaneBasis(vertex, v1, v2, originPt, step))
+        convertedVertices.append(cartesianToPlaneBasis(vertex, v1, v2, originPt, step, verbose))
 
     ones = [x[0] for x in convertedVertices]
     min1, max1 = min(ones), max(ones)
@@ -1110,20 +1122,23 @@ def fix(plane, figure, cubeFile, molFile, cmap, res=100):
     ax.set_xlim((xamin-0.5,xamax+0.5))
     ax.set_ylim((yamin-0.5,yamax+0.5))
     ax.set_zlim((zamin-0.5,zamax+0.5))
-
-def contourGraph(cubeFile, xyzfile, atomsDefiningPlane, gifDir, plotlySlider=True, gifName=None, dStep = 1, stepSmaller = 3, verbose = True, cmap=None, duration=100):
+    
+def cubeContour(cubeFile, xyzfile, atomsDefiningPlane, plotlySlider=False, gifName=None, dStep = 1, stepSmaller = 3, verbose = False, cmap=None, duration=100):
     '''
     Main function.
     '''
+    
+    print("\nBeginning cubeContour()...")
+    
     if cmap == None:
         nodes = [0.00, 0.01, 0.02, 0.05, 0.10, 0.20, 1.0]
         colours = ['black','blue','purple','red','orange','yellow','white']
-        cmap = LinearSegmentedColormap.from_list('contourGraph', list(zip(nodes,colours)))
+        cmap = LinearSegmentedColormap.from_list('cubeContour', list(zip(nodes,colours)))
 
     elif type(cmap) == list or type(cmap) == tuple:
         nodes, colours = cmap
         if gifName:
-            cmap = LinearSegmentedColormap.from_list('contourGraph', list(zip(nodes,colours)))
+            cmap = LinearSegmentedColormap.from_list('cubeContour', list(zip(nodes,colours)))
 
     pngList, revPngList = [], []
 
@@ -1131,7 +1146,6 @@ def contourGraph(cubeFile, xyzfile, atomsDefiningPlane, gifDir, plotlySlider=Tru
     planeGridGenResults = dict()
     newPoints = dict()
     if verbose:
-        print("\nBeginning contourGraph()...")
         print(f".cube file: {cubeFile}")
         print(f"Molecule file: {xyzfile}")
         print(f"Atoms to define plane: {atomsDefiningPlane}")
@@ -1140,6 +1154,7 @@ def contourGraph(cubeFile, xyzfile, atomsDefiningPlane, gifDir, plotlySlider=Tru
     dValue = 0
     dVals = []
     dInc = dStep
+    print("Constructing planes...")
     while safety < 1000:
         safety += 1
 
@@ -1222,7 +1237,7 @@ def contourGraph(cubeFile, xyzfile, atomsDefiningPlane, gifDir, plotlySlider=Tru
             print(f"\nFinding plane limits...")
 
         min1, max1, min2, max2 = findPlaneLimits(v1, v2, newPoint, stepSize, lines,
-                                                 xmin, xmax, ymin, ymax, zmin, zmax)
+                                                 xmin, xmax, ymin, ymax, zmin, zmax, verbose)
         mins.append((min1, min2, dValue))
         maxs.append((max1, max2, dValue))
 
@@ -1264,6 +1279,10 @@ def contourGraph(cubeFile, xyzfile, atomsDefiningPlane, gifDir, plotlySlider=Tru
 
     dValue = 0
     dInc = dStep
+    if gifName is None:
+        print("Obtaining values from .cube file...")
+    else:
+        print("Obtaining values from .cube file and creating pngs to form gif...")
     while dValue > dmin:
 
         if dValue == dmax:
@@ -1279,7 +1298,7 @@ def contourGraph(cubeFile, xyzfile, atomsDefiningPlane, gifDir, plotlySlider=Tru
             print(f"\nProceeding for Dcorr = {dValue}...")
             print(f"Origin = {origin}")
 
-        results = mriPlane(cubeFile, flatValues, v1, v2, origin, stepSize, NstepsDir1, NstepsDir2)
+        results = mriPlane(cubeFile, flatValues, v1, v2, origin, stepSize, NstepsDir1, NstepsDir2, verbose)
 
         if gifName:
 
@@ -1299,11 +1318,11 @@ def contourGraph(cubeFile, xyzfile, atomsDefiningPlane, gifDir, plotlySlider=Tru
 
             if dInc >= 0:
                 dStrip = str(dValue).replace('.','')
-                png = os.path.join(gifDir, f"{gifName}{dStrip}.png")
+                png = os.path.normpath(f"{gifName.replace('.gif','')}{dStrip}.png")
                 pngList.append(png)
             else:
                 dStrip = str(abs(dValue)).replace('.','')
-                png = os.path.join(gifDir, f"{gifName}Z{dStrip}.png")
+                png = os.path.normpath(f"{gifName.replace('.gif','')}Z{dStrip}.png")
                 revPngList.append(png)
 
             plt.tight_layout()
@@ -1328,19 +1347,23 @@ def contourGraph(cubeFile, xyzfile, atomsDefiningPlane, gifDir, plotlySlider=Tru
             del figMa, ax
 
     if gifName:
-        gifFull = os.path.join(gifDir, gifName)
+        gifFull = os.path.normpath(gifName)
         pngFullList = revPngList[::-1] + pngList
 
         if verbose:
-            print(f"\nCreating .gif from {len(pngFullList)} .png files...")
+            print(f"\nCreating gif from {len(pngFullList)} .png files...")
+        else:
+            print("Creating gif...")
 
         gifFromPngs(pngFullList, gifFull, duration)
 
         if verbose:
             print(f"Complete. File saved as {gifFull + '.gif'}.")
-            print(f"\ncontourGraph() complete.\n")
+            print(f"\ncubeContour() complete.\n")
 
     if plotlySlider:
+        print("Creating Plotly graph...")
+        
         dc = dict(H='grey', O='red', C='black', P='orange', N='blue')
         mol = xyzmol(xyzfile)
         mol = [mol[x][1:] for x in mol]
@@ -1455,3 +1478,136 @@ def contourGraph(cubeFile, xyzfile, atomsDefiningPlane, gifDir, plotlySlider=Tru
 
 
         figPl.show()
+    
+    print("contourGraph() complete.")
+
+def cli(flags, arguments):
+    '''
+    For CLI use.
+    '''
+    
+    # should go to else if in interactive 
+    if not hasattr(sys, 'ps1'):
+        
+        import getopt
+        argv = sys.argv[1:]
+
+        try:
+            opts, args = getopt.getopt(argv, "".join(flags), arguments)
+        
+        except getopt.GetoptError as e:
+            
+            print(e)
+            print(f"Accepted flags: {' '.join([f'-{x}'.replace(':','') for x in flags])}")
+            print(f"Accepted args: {' '.join([f'--{x}'.replace('=','') for x in arguments])}")
+
+            return
+        
+        tags = [x for x,y in opts]
+        
+        if '-h' in tags or '--help' in tags:
+            print('\nCheck the README: https://github.com/jjose031/CubeContour/blob/main/README.md\n\n'\
+                  'Command-line usage:\n'\
+                  '-c, --cube=         : (REQUIRED) .cube file containing voxel values. The three axes must align with the x,y,z axes of the Cartesian grid.\n'\
+                  '-x, --xyz=          : (REQUIRED) .xyz file containing molecule/structure of interest.\n'\
+                  '-a, --atoms=        : (REQUIRED) 3 numbers separated by commas corresponding to the three atoms used to define the visualization planes.'\
+                  ' Numbering of atoms is the order they appear in the .xyz file. Atoms must not be collinear.\n'\
+                  '-p, --plotly        : (no argument) Generate interactive Plotly graph in which a slider can be used to translate the plane of visualization in the direction normal to the plane.\n'\
+                  '-g, --gif=          : (default None) .gif file to generate. Gif is composed by translating the plane of visualization in the direction normal to the plane. If None, no gif is created.\n'\
+                  '-d, --dstep=        : (default 1) Step size to use when translating plane of visualization. Large step size results in fewer planes (lower resolution).\n'\
+                  '-s, --stepsmaller=  : (default 3) Step size to use for grid generated along visualization plane in order to retrieve voxel values from .cube file.'\
+                  ' A value of n results in a step size n times smaller than the step size of the .cube file.\n'\
+                  '-v, --verbose       : (no argument) Print information as the visualization is generated.\n'\
+                  '-m, --cmap=         : (default None) Matplotlib colourmap to use. If None, a built-in colourmap is used.\n'\
+                  '-t, --duration=     : (default 100) Duration (ms) of each frame in gif.\n'\
+                  '-h, --help=         : (no argument) Print help.')
+
+            return
+        
+        elif '-c' not in tags and '--cube' not in tags:
+            
+            print("ERROR: .cube file REQUIRED. Use -c or --cube=")
+            return
+        
+        elif '-x' not in tags and '--xyz' not in tags:
+            
+            print("ERROR: .xyz file REQUIRED. Use -x or --xyz=")
+            return
+        
+        elif '-a' not in tags and '--atoms' not in tags:
+            
+            print("ERROR: Choice of 3 atoms to form visualization plane REQUIRED (numbers separated by commas). Use -a or --atoms=")
+            return
+        
+        else:
+            
+            shortLongConvert = {'-c':'--cube',
+                                '-x':'--xyz',
+                                '-a':'--atoms',
+                                '-p':'--plotly',
+                                '-g':'--gif',
+                                '-d':'--dstep',
+                                '-s':'--stepsmaller',
+                                '-v':'--verbose',
+                                '-m':'--cmap',
+                                '-t':'--duration'}
+            cliMap = dict()
+            for opt, arg in opts:
+                
+                if opt in shortLongConvert.keys():
+                    cliMap[shortLongConvert[opt]] = arg.replace('=','')
+                else:
+                    cliMap[opt] = arg.replace('=','')
+            
+            
+            cliMap['--atoms'] = [int(n) for n in cliMap['--atoms'].split(',')]
+            
+            if '--plotly' in cliMap.keys():
+                cliMap['--plotly'] = True
+            else:
+                cliMap['--plotly'] = False
+            
+            if '--gif' not in cliMap.keys():
+                cliMap['--gif'] = None
+            
+            if '--dstep' not in cliMap.keys():
+                cliMap['--dstep'] = 1
+            else:
+                cliMap['--dstep'] = int(cliMap['--dstep'])
+                
+            if '--stepsmaller' not in cliMap.keys():
+                cliMap['--stepsmaller'] = 3
+            else:
+                cliMap['--stepsmaller'] = float(cliMap['--stepsmaller'])
+            
+            if '--verbose' in cliMap.keys():
+                cliMap['--verbose'] = True
+            else:
+                cliMap['--verbose'] = False
+            
+            if '--cmap' not in cliMap.keys():
+                cliMap['--cmap'] = None
+            
+            if '--duration' not in cliMap.keys():
+                cliMap['--duration'] = 100
+            else:
+                cliMap['--duration'] = int(cliMap['--duration'])
+            
+            cubeContour(cliMap['--cube'],
+                        cliMap['--xyz'],
+                        cliMap['--atoms'],
+                        cliMap['--plotly'],
+                        cliMap['--gif'],
+                        cliMap['--dstep'],
+                        cliMap['--stepsmaller'],
+                        cliMap['--verbose'],
+                        cliMap['--cmap'],
+                        cliMap['--duration'])
+
+    else:
+        return
+
+accepted_flags = ('h', 'c:', 'x:', 'a:', 'p', 'g:', 'd:', 's:', 'v', 'm:', 't:')
+accepted_args = ('help', 'cube=', 'xyz=', 'atoms=', 'plotly', 'gif=', 'dstep=', 'stepsmaller=', 'verbose', 'cmap=', 'duration=')
+cli(accepted_flags, accepted_args)
+
