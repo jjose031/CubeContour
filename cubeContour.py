@@ -1512,7 +1512,7 @@ def cli(flags, arguments):
                   '-x, --xyz=          : (REQUIRED) .xyz file containing molecule/structure of interest.\n'\
                   '-a, --atoms=        : (REQUIRED) 3 numbers separated by commas corresponding to the three atoms used to define the visualization planes.'\
                   ' Numbering of atoms is the order they appear in the .xyz file. Atoms must not be collinear.\n'\
-                  '-p, --plotly=       : (defualt None) Generate .html file with interactive Plotly graph in which a slider can be used to translate the plane of visualization in the direction normal to the plane.\n'\
+                  '-p, --plotly=       : (default None) Generate .html file with interactive Plotly graph in which a slider can be used to translate the plane of visualization in the direction normal to the plane.\n'\
                   '-g, --gif=          : (default None) .gif file to generate. Gif is composed by translating the plane of visualization in the direction normal to the plane. If None, no gif is created.\n'\
                   '-d, --dstep=        : (default 1) Step size to use when translating plane of visualization. Large step size results in fewer planes (lower resolution).\n'\
                   '-s, --stepsmaller=  : (default 3) Step size to use for grid generated along visualization plane in order to retrieve voxel values from .cube file.'\
