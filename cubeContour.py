@@ -1122,14 +1122,14 @@ def fix(plane, figure, cubeFile, molFile, cmap, res=100):
     ax.set_xlim((xamin-0.5,xamax+0.5))
     ax.set_ylim((yamin-0.5,yamax+0.5))
     ax.set_zlim((zamin-0.5,zamax+0.5))
-    
-def cubeContour(cubeFile, xyzfile, atomsDefiningPlane, plotlySlider=False, gifName=None, dStep = 1, stepSmaller = 3, verbose = False, cmap=None, duration=100):
+
+def cubeContour(cubeFile, xyzfile, atomsDefiningPlane, plotlySlider=None, gifName=None, dStep = 1, stepSmaller = 3, verbose = False, cmap=None, duration=100):
     '''
     Main function.
     '''
-    
+
     print("\nBeginning cubeContour()...")
-    
+
     if cmap == None:
         nodes = [0.00, 0.01, 0.02, 0.05, 0.10, 0.20, 1.0]
         colours = ['black','blue','purple','red','orange','yellow','white']
@@ -1363,7 +1363,7 @@ def cubeContour(cubeFile, xyzfile, atomsDefiningPlane, plotlySlider=False, gifNa
 
     if plotlySlider:
         print("Creating Plotly graph...")
-        
+
         dc = dict(H='grey', O='red', C='black', P='orange', N='blue')
         mol = xyzmol(xyzfile)
         mol = [mol[x][1:] for x in mol]
@@ -1476,35 +1476,35 @@ def cubeContour(cubeFile, xyzfile, atomsDefiningPlane, plotlySlider=False, gifNa
 
 
 
-
+        figPl.write_html(plotlySlider)
         figPl.show()
-    
+
     print("contourGraph() complete.")
 
 def cli(flags, arguments):
     '''
     For CLI use.
     '''
-    
-    # should go to else if in interactive 
+
+    # should go to else if in interactive
     if not hasattr(sys, 'ps1'):
-        
+
         import getopt
         argv = sys.argv[1:]
 
         try:
             opts, args = getopt.getopt(argv, "".join(flags), arguments)
-        
+
         except getopt.GetoptError as e:
-            
+
             print(e)
             print(f"Accepted flags: {' '.join([f'-{x}'.replace(':','') for x in flags])}")
             print(f"Accepted args: {' '.join([f'--{x}'.replace('=','') for x in arguments])}")
 
             return
-        
+
         tags = [x for x,y in opts]
-        
+
         if '-h' in tags or '--help' in tags:
             print('\nCheck the README: https://github.com/jjose031/CubeContour/blob/main/README.md\n\n'\
                   'Command-line usage:\n'\
@@ -1512,7 +1512,7 @@ def cli(flags, arguments):
                   '-x, --xyz=          : (REQUIRED) .xyz file containing molecule/structure of interest.\n'\
                   '-a, --atoms=        : (REQUIRED) 3 numbers separated by commas corresponding to the three atoms used to define the visualization planes.'\
                   ' Numbering of atoms is the order they appear in the .xyz file. Atoms must not be collinear.\n'\
-                  '-p, --plotly        : (no argument) Generate interactive Plotly graph in which a slider can be used to translate the plane of visualization in the direction normal to the plane.\n'\
+                  '-p, --plotly=       : (defualt None) Generate .html file with interactive Plotly graph in which a slider can be used to translate the plane of visualization in the direction normal to the plane.\n'\
                   '-g, --gif=          : (default None) .gif file to generate. Gif is composed by translating the plane of visualization in the direction normal to the plane. If None, no gif is created.\n'\
                   '-d, --dstep=        : (default 1) Step size to use when translating plane of visualization. Large step size results in fewer planes (lower resolution).\n'\
                   '-s, --stepsmaller=  : (default 3) Step size to use for grid generated along visualization plane in order to retrieve voxel values from .cube file.'\
@@ -1523,24 +1523,24 @@ def cli(flags, arguments):
                   '-h, --help=         : (no argument) Print help.')
 
             return
-        
+
         elif '-c' not in tags and '--cube' not in tags:
-            
+
             print("ERROR: .cube file REQUIRED. Use -c or --cube=")
             return
-        
+
         elif '-x' not in tags and '--xyz' not in tags:
-            
+
             print("ERROR: .xyz file REQUIRED. Use -x or --xyz=")
             return
-        
+
         elif '-a' not in tags and '--atoms' not in tags:
-            
+
             print("ERROR: Choice of 3 atoms to form visualization plane REQUIRED (numbers separated by commas). Use -a or --atoms=")
             return
-        
+
         else:
-            
+
             shortLongConvert = {'-c':'--cube',
                                 '-x':'--xyz',
                                 '-a':'--atoms',
@@ -1553,46 +1553,44 @@ def cli(flags, arguments):
                                 '-t':'--duration'}
             cliMap = dict()
             for opt, arg in opts:
-                
+
                 if opt in shortLongConvert.keys():
                     cliMap[shortLongConvert[opt]] = arg.replace('=','')
                 else:
                     cliMap[opt] = arg.replace('=','')
-            
-            
+
+
             cliMap['--atoms'] = [int(n) for n in cliMap['--atoms'].split(',')]
-            
-            if '--plotly' in cliMap.keys():
-                cliMap['--plotly'] = True
-            else:
-                cliMap['--plotly'] = False
-            
+
+            if '--plotly' not in cliMap.keys():
+                cliMap['--plotly'] = None
+
             if '--gif' not in cliMap.keys():
                 cliMap['--gif'] = None
-            
+
             if '--dstep' not in cliMap.keys():
                 cliMap['--dstep'] = 1
             else:
                 cliMap['--dstep'] = int(cliMap['--dstep'])
-                
+
             if '--stepsmaller' not in cliMap.keys():
                 cliMap['--stepsmaller'] = 3
             else:
                 cliMap['--stepsmaller'] = float(cliMap['--stepsmaller'])
-            
+
             if '--verbose' in cliMap.keys():
                 cliMap['--verbose'] = True
             else:
                 cliMap['--verbose'] = False
-            
+
             if '--cmap' not in cliMap.keys():
                 cliMap['--cmap'] = None
-            
+
             if '--duration' not in cliMap.keys():
                 cliMap['--duration'] = 100
             else:
                 cliMap['--duration'] = int(cliMap['--duration'])
-            
+
             cubeContour(cliMap['--cube'],
                         cliMap['--xyz'],
                         cliMap['--atoms'],
@@ -1607,7 +1605,6 @@ def cli(flags, arguments):
     else:
         return
 
-accepted_flags = ('h', 'c:', 'x:', 'a:', 'p', 'g:', 'd:', 's:', 'v', 'm:', 't:')
-accepted_args = ('help', 'cube=', 'xyz=', 'atoms=', 'plotly', 'gif=', 'dstep=', 'stepsmaller=', 'verbose', 'cmap=', 'duration=')
+accepted_flags = ('h', 'c:', 'x:', 'a:', 'p:', 'g:', 'd:', 's:', 'v', 'm:', 't:')
+accepted_args = ('help', 'cube=', 'xyz=', 'atoms=', 'plotly=', 'gif=', 'dstep=', 'stepsmaller=', 'verbose', 'cmap=', 'duration=')
 cli(accepted_flags, accepted_args)
-
