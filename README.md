@@ -11,7 +11,7 @@ CLI usage:
 
 -a, --atoms=        : (REQUIRED) 3 numbers separated by commas corresponding to the three atoms used to define the visualization planes. Numbering of atoms is the order they appear in the .xyz file. Atoms must not be collinear.
 
--p, --plotly=       : (defualt None) Generate .html file with interactive Plotly graph in which a slider can be used to translate the plane of visualization in the direction normal to the plane.
+-p, --plotly=       : (default None) Generate .html file with interactive Plotly graph in which a slider can be used to translate the plane of visualization in the direction normal to the plane.
 
 -g, --gif=          : (default None) .gif file to generate. Gif is composed by translating the plane of visualization in the direction normal to the plane. If None, no gif is created.
 
